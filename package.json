@@ -22,8 +22,16 @@
     "pwa",
     "game-engine"
   ],
-  "author": "",
+  "author": "pxperfectmike",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PxPerfectMike/sveltegame.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PxPerfectMike/sveltegame/issues"
+  },
+  "homepage": "https://github.com/PxPerfectMike/sveltegame#readme",
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.49.2",

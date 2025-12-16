@@ -1,5 +1,10 @@
 # SvelteGame Engine
 
+[![CI](https://github.com/PxPerfectMike/sveltegame/actions/workflows/ci.yml/badge.svg)](https://github.com/PxPerfectMike/sveltegame/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Svelte](https://img.shields.io/badge/Svelte-5-orange.svg)](https://svelte.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
+
 A SvelteKit-based mobile game engine template for building 2D casual/puzzle games. PWA-first with all the systems you need to build production-ready mobile games.
 
 ## Features
