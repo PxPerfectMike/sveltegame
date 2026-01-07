@@ -29,11 +29,21 @@ export {
 	type SceneTransition,
 	type SceneState,
 	type SceneStore,
-	type TransitionType
+	type TransitionType,
+	type NavigationOptions
 } from './scenes/sceneStore';
 
 // State
 export { createGameStore, createSvelteGameStore, type GameStore } from './state/createGameStore';
+export { createGameStoreWithActions } from './state/createGameStoreWithActions';
+export {
+	createGameStoreWithMiddleware,
+	type Middleware
+} from './state/createGameStoreWithMiddleware';
+export { createScopedStore, type ScopedStoreOptions } from './state/createScopedStore';
+
+// Events
+export { createEventBus, type EventBus } from './events/EventBus';
 
 // Save
 export {
@@ -106,6 +116,21 @@ export {
 	type Achievement,
 	type AchievementProgress
 } from './achievements/AchievementManager';
+export {
+	createReactiveAchievementManager,
+	type ReactiveAchievementDefinition,
+	type ReactiveAchievementManager
+} from './achievements/ReactiveAchievementManager';
+
+// Time
+export {
+	createCalendarService,
+	type CalendarService,
+	type CalendarConfig
+} from './time/CalendarService';
+
+// UI
+export { createModalQueue, type ModalQueue, type ModalQueueItem } from './ui/ModalQueue';
 
 // Analytics
 export {

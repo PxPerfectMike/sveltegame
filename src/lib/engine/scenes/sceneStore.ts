@@ -48,6 +48,16 @@ export interface SceneState {
 }
 
 /**
+ * Navigation options for scene transitions with optional data passing.
+ */
+export interface NavigationOptions {
+	/** Transition animation configuration */
+	transition?: SceneTransition;
+	/** Data to pass to the target scene */
+	data?: Record<string, unknown>;
+}
+
+/**
  * Subscriber callback type.
  */
 type Subscriber = (state: SceneState) => void;
@@ -61,15 +71,22 @@ const defaultTransition: SceneTransition = {
 };
 
 /**
+ * Check if an object is a SceneTransition (has 'type' property).
+ */
+function isSceneTransition(obj: unknown): obj is SceneTransition {
+	return obj !== null && typeof obj === 'object' && 'type' in obj;
+}
+
+/**
  * Scene store interface.
  */
 export interface SceneStore {
 	/** Get current state snapshot */
 	getState(): SceneState;
-	/** Navigate to a scene (clears stack) */
-	goto(sceneId: string, transition?: SceneTransition): Promise<void>;
-	/** Push a scene onto the stack */
-	push(sceneId: string, transition?: SceneTransition): Promise<void>;
+	/** Navigate to a scene (clears stack). Accepts SceneTransition or NavigationOptions. */
+	goto(sceneId: string, options?: SceneTransition | NavigationOptions): Promise<void>;
+	/** Push a scene onto the stack. Accepts SceneTransition or NavigationOptions. */
+	push(sceneId: string, options?: SceneTransition | NavigationOptions): Promise<void>;
 	/** Pop current scene and return to previous */
 	pop(transition?: SceneTransition): Promise<void>;
 	/** Check if back navigation is possible */
@@ -82,6 +99,8 @@ export interface SceneStore {
 	getSceneById(id: string): SceneDefinition | undefined;
 	/** Subscribe to state changes */
 	subscribe(callback: Subscriber): () => void;
+	/** Get data passed to current scene */
+	getSceneData<T = Record<string, unknown>>(): T | null;
 }
 
 /**
@@ -112,6 +131,9 @@ export function createSceneStore(scenes: SceneDefinition[], initialScene: string
 	const sceneStack: string[] = [];
 	const subscribers = new Set<Subscriber>();
 
+	// Current scene data (passed during navigation)
+	let currentSceneData: Record<string, unknown> | null = null;
+
 	function notify() {
 		subscribers.forEach((cb) => cb({ ...state }));
 	}
@@ -123,7 +145,8 @@ export function createSceneStore(scenes: SceneDefinition[], initialScene: string
 
 	async function transitionTo(
 		targetId: string,
-		transition: SceneTransition = defaultTransition
+		transition: SceneTransition = defaultTransition,
+		data?: Record<string, unknown>
 	): Promise<void> {
 		const targetScene = sceneMap.get(targetId);
 		if (!targetScene) {
@@ -147,6 +170,9 @@ export function createSceneStore(scenes: SceneDefinition[], initialScene: string
 		if (currentScene?.onExit) {
 			await currentScene.onExit();
 		}
+
+		// Update scene data
+		currentSceneData = data ?? null;
 
 		// Update scene
 		const previousScene = state.currentScene;
@@ -172,16 +198,44 @@ export function createSceneStore(scenes: SceneDefinition[], initialScene: string
 			return { ...state };
 		},
 
-		async goto(sceneId: string, transition?: SceneTransition): Promise<void> {
+		async goto(sceneId: string, options?: SceneTransition | NavigationOptions): Promise<void> {
 			// Clear stack when using goto
 			sceneStack.length = 0;
-			await transitionTo(sceneId, transition);
+
+			// Parse options - support both SceneTransition and NavigationOptions
+			let transition: SceneTransition | undefined;
+			let data: Record<string, unknown> | undefined;
+
+			if (options) {
+				if (isSceneTransition(options)) {
+					transition = options;
+				} else {
+					transition = options.transition;
+					data = options.data;
+				}
+			}
+
+			await transitionTo(sceneId, transition, data);
 		},
 
-		async push(sceneId: string, transition?: SceneTransition): Promise<void> {
+		async push(sceneId: string, options?: SceneTransition | NavigationOptions): Promise<void> {
 			// Push current scene onto stack before transitioning
 			sceneStack.push(state.currentScene);
-			await transitionTo(sceneId, transition);
+
+			// Parse options - support both SceneTransition and NavigationOptions
+			let transition: SceneTransition | undefined;
+			let data: Record<string, unknown> | undefined;
+
+			if (options) {
+				if (isSceneTransition(options)) {
+					transition = options;
+				} else {
+					transition = options.transition;
+					data = options.data;
+				}
+			}
+
+			await transitionTo(sceneId, transition, data);
 		},
 
 		async pop(transition?: SceneTransition): Promise<void> {
@@ -215,6 +269,10 @@ export function createSceneStore(scenes: SceneDefinition[], initialScene: string
 			return () => {
 				subscribers.delete(callback);
 			};
+		},
+
+		getSceneData<T = Record<string, unknown>>(): T | null {
+			return currentSceneData as T | null;
 		}
 	};
 }
